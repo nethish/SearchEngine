@@ -1,6 +1,10 @@
 import requests
 import bs4 as bs
 import re
+from nltk.corpus import stopwords 
+from nltk.stem import WordNetLemmatizer
+
+stop_words = set(stopwords.words('english')) 
 
 def get_text(url):
     try:
@@ -28,11 +32,19 @@ def tokenize(text):
             # if not t:
                 # continue
             # tokens.append(t)
+    token_list = [token for token in token_list if token not in stop_words]
     return token_list
+
+def lemmatize(tokens):
+    lemmatizer = WordNetLemmatizer()
+    for i in range(len(tokens)):
+        tokens[i] = lemmatizer.lemmatize(tokens[i])
+    return tokens
 
 def get_tokens(url):
     text = get_text(url)
     tokens = tokenize(text)
+    tokens = lemmatize(tokens)
     return tokens
 
 if __name__ == '__main__':

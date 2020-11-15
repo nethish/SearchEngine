@@ -1,7 +1,7 @@
 from collection import Collection
 import re, os
 import pickle
-from math import log
+from math import log, log2
 
 class Search:
   def __init__(self, collection):
@@ -38,11 +38,14 @@ class Search:
       terms[i] = terms[i].lower()
     query = []
     for t in self.terms:
-      cnt = terms.count(t)
+      cnt = terms.count(t) + 1
       if not cnt:
         query.append(0)
         continue
-      query.append(log(log(cnt + 2)) * log((self.collection.size + 1) / (2 + self.collection.get_dft(t))))
+      inv = log2((self.collection.size + 1) / (2 + self.collection.get_dft(t)))
+      res = log(log2(cnt + 1)) * inv
+      res /= ((cnt ** 2) * inv ** 2) ** ( 1 / 2)
+      query.append(res)
     return query
 
   def search(self, query):
@@ -74,10 +77,18 @@ class Search:
     # print(result)
     return search_results
 
+  def normalize_tfidf(self, doc, term):
+    ntfidf = self.collection.get_tfidf(doc, term)
+    tf = self.collection.get_tdf(doc, term) + 1
+    df = self.collection.get_dft(term)
+    size = self.collection.size
+    ntfidf /= (tf ** 2 * log2(2 + size / (df + 1))) ** (1 / 2)
+    return ntfidf
+
   def construct_doc(self, doc):
     doc_vector = []
     for t in self.terms:
-      doc_vector.append(self.collection.get_tfidf(doc, t))
+      doc_vector.append(self.normalize_tfidf(doc, t))
     return doc_vector
 
   def update_collection(self, links):

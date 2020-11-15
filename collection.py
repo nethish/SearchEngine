@@ -49,14 +49,14 @@ class Collection:
     def get_url(self, id):
         return self.urls[id]
 
-    def get_postings(self):
-        for i in self.postings:
-            print('Word:', i)
-            for j in self.postings[i]:
-                print('Doc: %d, Freq: %d'%(j, self.postings[i][j]), end = ' | ')
-            print('\n------------------------------')
-        print()
-        return self.postings
+    # def get_postings(self):
+    #     for i in self.postings:
+    #         print('Word:', i)
+    #         for j in self.postings[i]:
+    #             print('Doc: %d, Freq: %d'%(j, self.postings[i][j]), end = ' | ')
+    #         print('\n------------------------------')
+    #     print()
+    #     return self.postings
 
 if __name__ == "__main__":
     links = open("./Links.txt", 'r').read().split('\n')
