@@ -2,6 +2,7 @@ from collection import Collection
 import re, os
 import pickle
 from math import log, log2
+import lsi
 
 class Search:
   def __init__(self, collection):
@@ -15,6 +16,15 @@ class Search:
     self.terms = []
     for term in self.collection.terms:
       self.terms.append(term)
+    self.update_lsi()
+
+  def update_lsi(self):
+    matrix = []
+    for doc in range(self.collection.size):
+      matrix.append([])
+      for t in self.terms:
+        matrix[-1].append(self.normalize_tfidf(doc, t))
+    self.lsi = lsi.lsi_matrix(matrix)
 
   def get_collection(self):
     return self.collection
@@ -48,6 +58,9 @@ class Search:
       query.append(res)
     return query
 
+  def get_lsi_doc(self, doc):
+    return list(self.lsi[doc - 1])
+
   def search(self, query):
     # result = []
     # terms = re.split('\W+', query)
@@ -65,7 +78,7 @@ class Search:
     
     result = []
     for doc in range(1, len(self.collection.urls) + 1):
-      doc_vector = self.construct_doc(doc)
+      doc_vector = self.get_lsi_doc(doc)
       # for t in self.terms:
       #   doc_vector.append(self.collection.get_tfidf(doc, t)) #self.collection.tdf[doc][t])
       result.append((self.cosine(doc_vector, query), doc))
@@ -92,10 +105,14 @@ class Search:
     return doc_vector
 
   def update_collection(self, links):
+    updated = False
     for link in links:
       if link not in self.collection.corpus:
+        updated = True
         print("Updated: ", self.collection.size)
         self.collection.add_document(link)
+    if not updated:
+      return
     self.set_collection(self.collection)
     collection_loader = CollectionLoader()
     collection_loader.dump(self.collection)
