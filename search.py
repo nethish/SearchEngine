@@ -3,6 +3,8 @@ import re, os
 import pickle
 from math import log, log2
 import lsi
+from cache import Cache
+from time import time
 
 class Search:
   def __init__(self, collection):
@@ -10,6 +12,7 @@ class Search:
     self.terms = []
     self.search_limit = 5
     self.set_collection(collection)
+    self.cache = Cache()
 
   def set_collection(self, collection):
     self.collection = collection
@@ -62,6 +65,7 @@ class Search:
     return list(self.lsi[doc - 1])
 
   def search(self, query):
+    clock = time()
     # result = []
     # terms = re.split('\W+', query)
     # query = []
@@ -72,6 +76,10 @@ class Search:
     #     continue
     #   query.append(log(1 + log(cnt)) * log((self.collection.size + 1) / (1 + self.collection.get_dft(t))))
     query = self.structure_query(query)
+
+    if self.cache.get(query) is not None:
+      print('Search time: ', time() - clock, 'seconds')
+      return self.cache.get(query)
 
     if not query:
       return ["No match found"]
@@ -88,6 +96,8 @@ class Search:
     for i in range(min(self.search_limit, len(result))):
       search_results.append(self.collection.get_url(result[i][1]))
     # print(result)
+    self.cache.put(query, search_results)
+    print('Search time: ', time() - clock, 'seconds')
     return search_results
 
   def normalize_tfidf(self, doc, term):
