@@ -153,6 +153,10 @@ if __name__ == "__main__":
       collection_loader.dump(collection)
     search = Search(collection)
     search.update_collection(links)
+
+
+    print(search.collection.get_postings())
+
     # print(collection.terms)
     query = input('>>> Search: ')
     while query != 'exit':
